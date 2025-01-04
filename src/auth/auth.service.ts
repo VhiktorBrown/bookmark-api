@@ -3,10 +3,16 @@ import { AuthDto } from "./dto";
 import * as argon from 'argon2';
 import { PrismaService } from "src/prisma/prisma.service";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable({})
 export class AuthService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private prisma: PrismaService,
+        private jwt: JwtService,
+        private config: ConfigService,
+    ) {}
     
     async signUp(dto: AuthDto){
         //first hash user's password.
@@ -21,11 +27,8 @@ export class AuthService {
                 }
             });
 
-            //remove the hash from the response
-            delete user.hash;
-
             //and return the saved user as a response.
-            return user;
+            return this.signToken(user.id, user.email);
         }catch(error){
             if(error 
                 instanceof 
@@ -65,10 +68,29 @@ export class AuthService {
             );
         }
 
-        //delete hash field
-        delete user.hash;
-        
-        //send back the user.
-        return user;
+        //send back the auth token.
+        return this.signToken(user.id, user.email);
+    }
+
+    //function to generate our auth token.
+    async signToken(
+        userId: number, 
+        email: string) : Promise<{}>{
+        //create the payload that we want to sign
+         const payload = {
+            sub: userId,
+            email: email,
+         }
+         //fetch the token from our env
+         const secret = this.config.get('JWT_SECRET');
+         //sign the payload and generate our token.
+         const token = await this.jwt.signAsync(payload, {
+            expiresIn: '15m',
+            secret: secret,
+         });
+         //return our access token.
+         return {
+            "access_token": token,
+         };
     }
 }
