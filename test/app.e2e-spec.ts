@@ -4,6 +4,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum'; 
 import { AuthDto } from '../src/auth/dto/auth.dto';
+import { EditUserDto } from 'src/user/dto';
+import { BookmarkDto } from 'src/bookmark/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -36,6 +38,7 @@ describe('App e2e', () => {
     app.close();
   });
 
+  //AUTHENTICATION TESTS
   describe('Auth', () => {
     //declare DTO to be used
     let dto: AuthDto = {
@@ -43,7 +46,13 @@ describe('App e2e', () => {
       password: 'password',
     };
 
-    //Test cases for SIGN UP
+    //also declare an incorrect DTO to test for wrong input
+    let wrongDto: AuthDto = {
+      email: 'ambitious@gmail',
+      password: 'password',
+    };
+
+    //TEST CASES FOR SIGN UP
     describe('Sign up', () => {
       //execute for empty email
       it('Should throw error if email is empty', () => {
@@ -52,6 +61,17 @@ describe('App e2e', () => {
           .post('/auth/signup')
           .withBody({
             password: dto.password,
+          })
+          .expectStatus(400)
+      });
+
+      //execute for incorrect email format
+      it('Should throw error if email field is not an email', () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({
+            email: wrongDto.email,
           })
           .expectStatus(400)
       });
@@ -87,7 +107,7 @@ describe('App e2e', () => {
     });
 
 
-    //test cases for SIGN IN
+    //TEST CASES FOR SIGN IN
     describe('Sign in', () => {
 
       //execute for empty email
@@ -97,6 +117,17 @@ describe('App e2e', () => {
           .post('/auth/signin')
           .withBody({
             password: dto.password,
+          })
+          .expectStatus(400)
+      });
+
+      //execute for incorrect email format
+      it('Should throw error if email field is not an email', () => {
+        return pactum
+          .spec()
+          .post('/auth/signin')
+          .withBody({
+            email: wrongDto.email,
           })
           .expectStatus(400)
       });
@@ -133,7 +164,9 @@ describe('App e2e', () => {
     });
   });
 
+  //USER RELATED TESTS
   describe('User', () => {
+    //test case to get user's profile
     describe('Get my profile', () => {
       it('Should get the current user', () => {
         return pactum
@@ -145,17 +178,53 @@ describe('App e2e', () => {
           .expectStatus(200)
           .inspect()
       })
-
     });
-    describe('Edit profile', () => {
 
+    //test case to edit user's profile
+    describe('Edit profile', () => {
+      const dto: EditUserDto = {
+        firstName: "Ambitious",
+        lastName: "Victor",
+      }
+      it('Should edit profile of user', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .patch('/users')
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.firstName)
+          .inspect() 
+      })
     });
   });
 
+  //BOOKMARK RELATED TESTS
   describe('Bookmarks', () => {
+    //test case to create a new bookmark
     describe('Create bookmark', () => {
-
+      const dto: BookmarkDto = {
+        title: "New bookmark",
+        description: "This is my own bookmark. It's the repository of my github profile",
+        link: 'https://github.com/VhiktorBrown'
+      }
+      it('Should create a new bookmark', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .post('/bookmarks')
+          .withBody(dto)
+          .expectStatus(201)
+          .expectBodyContains(dto.title)
+          .inspect() 
+      })
     });
+    
+
     describe('Get bookmarks', () => {
 
     });
