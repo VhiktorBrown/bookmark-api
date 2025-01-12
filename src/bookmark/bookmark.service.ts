@@ -6,13 +6,14 @@ import { BookmarkDto } from './dto';
 export class BookmarkService {
     constructor(private prisma: PrismaService){}
 
+    //creates bookmark
     async createBookmark(
         userId: number,
         dto: BookmarkDto
     ) {
         try {
             //create bookmark and add the userId
-            const bookmark = this.prisma.bookmark.create({
+            const bookmark = await this.prisma.bookmark.create({
                 data: {
                     title: dto.title,
                     description: dto.description,
@@ -20,6 +21,8 @@ export class BookmarkService {
                     link: dto.link,
                 }
             })
+
+            delete bookmark.userId;
 
             //return bookmark
             return bookmark;
