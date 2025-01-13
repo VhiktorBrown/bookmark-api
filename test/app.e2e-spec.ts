@@ -219,17 +219,37 @@ describe('App e2e', () => {
           .post('/bookmarks')
           .withBody(dto)
           .expectStatus(201)
+          .stores('bookmark_id', 'id')
           .expectBodyContains(dto.title)
           .inspect() 
       })
     });
     
-
+    //test case to fetch all bookmarks
     describe('Get bookmarks', () => {
-
+      it('Should fetch all bookmarks for a single user', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .get('/bookmarks')
+          .expectStatus(200)
+          .inspect() 
+      })
     });
-    describe('Get bookmark by id', () => {
 
+    describe('Get bookmark by id', () => {
+      it('Should fetch a single bookmark for a single user', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .get('/bookmarks/$S{bookmark_id}')
+          .expectStatus(200)
+          .inspect() 
+      })
     });
     describe('Edit bookmark', () => {
 
