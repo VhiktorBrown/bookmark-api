@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BookmarkDto } from './dto';
+import { BookmarkDto, UpdateBookmarkDto } from './dto';
 
 @Injectable()
 export class BookmarkService {
@@ -86,7 +86,7 @@ export class BookmarkService {
      async editBookmark(
         userId: number,
         bookmarkId: number,
-        dto: BookmarkDto,
+        dto: UpdateBookmarkDto,
     ) {
         try {
             //check to make sure that the bookmark ID is even valid.

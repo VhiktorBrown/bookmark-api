@@ -4,8 +4,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum'; 
 import { AuthDto } from '../src/auth/dto/auth.dto';
-import { EditUserDto } from 'src/user/dto';
-import { BookmarkDto } from 'src/bookmark/dto';
+import { EditUserDto } from '../src/user/dto/edit_user_dto';
+import { BookmarkDto, UpdateBookmarkDto } from '../src/bookmark/dto/index';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -209,8 +209,25 @@ describe('App e2e', () => {
       link: 'https://github.com/VhiktorBrown'
     }
 
-    //test case to create a new bookmark
+    //test case for creating bookmarks
     describe('Create bookmark', () => {
+      it('Should test for empty title', () => {
+        const dto: BookmarkDto = {
+          title: "",
+          description: "This is my own bookmark. It's the repository of my github profile",
+          link: 'https://github.com/VhiktorBrown'
+        }
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .post('/bookmarks')
+          .withBody(dto)
+          .expectStatus(400)
+          .inspect() 
+      })
+
       it('Should create a new bookmark', () => {
         return pactum
           .spec()
@@ -225,6 +242,7 @@ describe('App e2e', () => {
           .inspect() 
       })
     });
+
     
     //test case to fetch all bookmarks
     describe('Get bookmarks', () => {
@@ -256,12 +274,31 @@ describe('App e2e', () => {
 
     //test case to edit a bookmark
     describe('Edit bookmark', () => {
-      const editDto: BookmarkDto = {
+      const editDto: UpdateBookmarkDto = {
         title: "Edited bookmark",
         description: "This is my edited bookmark. It's the repository of my github profile",
         link: 'https://github.com/VhiktorBrown/me'
       }
+      
+      //test for edit
       it('Should edit bookmark', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .patch('/bookmarks/$S{bookmark_id}')
+          .withBody(editDto)
+          .expectStatus(200)
+          .inspect() 
+      })
+
+      //test for empty link
+      it('Should return 200 even if link is empty', () => {
+        const editDto: UpdateBookmarkDto = {
+          title: "Edited bookmark",
+          description: "This is my edited bookmark. It's the repository of my github profile",
+        }
         return pactum
           .spec()
           .withHeaders({

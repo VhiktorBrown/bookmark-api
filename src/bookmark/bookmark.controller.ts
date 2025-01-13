@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { GetUser } from '../auth/decorator/get-user.decorator';
-import { BookmarkDto } from './dto';
+import { BookmarkDto, UpdateBookmarkDto } from './dto';
 import { BookmarkService } from './bookmark.service';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 
@@ -49,7 +49,7 @@ export class BookmarkController {
     editBookmark(
         @GetUser('id') userId: number,
         @Param('id', ParseIntPipe) bookmarkId: number,
-        @Body() dto: BookmarkDto,
+        @Body() dto: UpdateBookmarkDto,
     ) {
         return this.bookmarkService.editBookmark(
             userId,
