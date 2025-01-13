@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BookmarkDto } from './dto';
 
@@ -68,6 +68,11 @@ export class BookmarkService {
                 }
             });
 
+            //if not found, throws error
+            if(!bookmark){
+                throw new ForbiddenException();
+            }
+
             //remove userId from the response
             delete bookmark.userId;
 
@@ -75,6 +80,76 @@ export class BookmarkService {
         }catch(err){
             throw err;
         }
-        
+    }
+
+     //edit a single bookmark
+     async editBookmark(
+        userId: number,
+        bookmarkId: number,
+        dto: BookmarkDto,
+    ) {
+        try {
+            //check to make sure that the bookmark ID is even valid.
+            const bookmark = await this.prisma.bookmark.findFirst({
+                where: {
+                    userId: userId,
+                    id: bookmarkId,
+                }
+            });
+
+            //if it does not exist, throw an error
+            if(!bookmark){
+                throw new ForbiddenException();
+            }
+
+            //update the bookmark
+            const updatedBookmark = await this.prisma.bookmark.update({
+                where: {
+                    id: bookmarkId
+                },
+                data: {
+                    ...dto,
+                }
+            });
+
+            //remove the userId
+            delete updatedBookmark.userId;
+
+            return { bookmark: updatedBookmark};
+
+        }catch(err){
+            throw err;
+        }
+    }
+
+    //delete a bookmark
+    async deleteBookmark(
+        userId: number,
+        bookmarkId: number,
+    ){
+        //check to see if it exists
+        const bookmark = await this.prisma.bookmark.findFirst({
+            where: {
+                userId: userId,
+                id: bookmarkId,
+            }
+        });
+
+        //if it does not exist,
+        if(!bookmark){
+            throw new ForbiddenException();
+        }
+
+        //then, delete
+        const deletedBookmark = this.prisma.bookmark.delete({
+            where: {
+                id: bookmarkId
+            }
+        });
+
+        return {
+            "status": true,
+            "message": "Bookmark successfully deleted"
+        };
     }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { GetUser } from '../auth/decorator/get-user.decorator';
 import { BookmarkDto } from './dto';
 import { BookmarkService } from './bookmark.service';
@@ -39,6 +39,32 @@ export class BookmarkController {
         @Param('id', ParseIntPipe) bookmarkId: number
     ) {
         return this.bookmarkService.getBookmark(
+            userId,
+            bookmarkId,
+        );
+    }
+
+    //Get single bookmark endpoint
+    @Patch(':id')
+    editBookmark(
+        @GetUser('id') userId: number,
+        @Param('id', ParseIntPipe) bookmarkId: number,
+        @Body() dto: BookmarkDto,
+    ) {
+        return this.bookmarkService.editBookmark(
+            userId,
+            bookmarkId,
+            dto,
+        );
+    }
+
+    //Delete bookmark endpoint
+    @Delete(':id')
+    deleteBookmark(
+        @GetUser('id') userId: number,
+        @Param('id', ParseIntPipe) bookmarkId: number,
+    ) {
+        return this.bookmarkService.deleteBookmark(
             userId,
             bookmarkId,
         );

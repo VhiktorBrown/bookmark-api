@@ -203,13 +203,14 @@ describe('App e2e', () => {
 
   //BOOKMARK RELATED TESTS
   describe('Bookmarks', () => {
+    const dto: BookmarkDto = {
+      title: "New bookmark",
+      description: "This is my own bookmark. It's the repository of my github profile",
+      link: 'https://github.com/VhiktorBrown'
+    }
+
     //test case to create a new bookmark
     describe('Create bookmark', () => {
-      const dto: BookmarkDto = {
-        title: "New bookmark",
-        description: "This is my own bookmark. It's the repository of my github profile",
-        link: 'https://github.com/VhiktorBrown'
-      }
       it('Should create a new bookmark', () => {
         return pactum
           .spec()
@@ -239,6 +240,7 @@ describe('App e2e', () => {
       })
     });
 
+    //test case to get a single bookmark by id
     describe('Get bookmark by id', () => {
       it('Should fetch a single bookmark for a single user', () => {
         return pactum
@@ -251,11 +253,39 @@ describe('App e2e', () => {
           .inspect() 
       })
     });
+
+    //test case to edit a bookmark
     describe('Edit bookmark', () => {
-
+      const editDto: BookmarkDto = {
+        title: "Edited bookmark",
+        description: "This is my edited bookmark. It's the repository of my github profile",
+        link: 'https://github.com/VhiktorBrown/me'
+      }
+      it('Should edit bookmark', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .patch('/bookmarks/$S{bookmark_id}')
+          .withBody(editDto)
+          .expectStatus(200)
+          .inspect() 
+      })
     });
-    describe('Delete bookmark', () => {
 
+    //test case to delete a bookmark
+    describe('Delete bookmark', () => {
+      it('Should delete bookmark', () => {
+        return pactum
+          .spec()
+          .withHeaders({
+            Authorization: 'Bearer $S{user_access_token}'
+          })
+          .delete('/bookmarks/$S{bookmark_id}')
+          .expectStatus(200)
+          .inspect() 
+      })
     });
   });
 });
